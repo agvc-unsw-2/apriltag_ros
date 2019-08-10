@@ -298,7 +298,7 @@ AprilTagDetectionArray TagDetector::detectTags (
     addImagePoints(detection, standaloneTagImagePoints);
     Eigen::Matrix4d transform = getRelativeTransform(standaloneTagObjectPoints,
                                                      standaloneTagImagePoints,
-                                                     fx, fy, cx, cy);
+                                                     camera_model);
     Eigen::Matrix3d rot = transform.block(0, 0, 3, 3);
     Eigen::Quaternion<double> rot_quaternion(rot);
     
@@ -334,7 +334,7 @@ AprilTagDetectionArray TagDetector::detectTags (
 
       Eigen::Matrix4d transform =
           getRelativeTransform(bundleObjectPoints[bundleName],
-                               bundleImagePoints[bundleName], fx, fy, cx, cy);
+                               bundleImagePoints[bundleName], camera_model);
       Eigen::Matrix3d rot = transform.block(0, 0, 3, 3);
       Eigen::Quaternion<double> rot_quaternion(rot);
 
@@ -454,19 +454,41 @@ void TagDetector::addImagePoints (
 Eigen::Matrix4d TagDetector::getRelativeTransform(
     std::vector<cv::Point3d > objectPoints,
     std::vector<cv::Point2d > imagePoints,
-    double fx, double fy, double cx, double cy) const
+    image_geometry::PinholeCameraModel& camera) const
 {
   // perform Perspective-n-Point camera pose estimation using the
   // above 3D-2D point correspondences
   cv::Mat rvec, tvec;
-  cv::Matx33d cameraMatrix(fx,  0, cx,
-                           0,  fy, cy,
-                           0,   0,  1);
+
+  // Undistort points with fisheye model
+  std::vector<cv::Point2d> imagePointsRect;
+
+  cv::Mat K(3, 3, CV_64F, cv::Scalar(0));
+  K.at<double>(0,0) = camera.fx();
+  K.at<double>(1,1) = camera.fy();
+  K.at<double>(0,2) = camera.cx();
+  K.at<double>(1,2) = camera.cy();
+  K.at<double>(2,2) = 1;
+  cv::Mat D = camera.distortionCoeffs();
+  D = D(cv::Rect(0, 0, 4, 1));
+  
+  /*ROS_INFO_STREAM("D.total() = " << D.total());
+  ROS_INFO_STREAM("K.size() = " << K.size());
+  ROS_INFO_STREAM("K.depth() = " << K.depth());*/
+  
+  cv::fisheye::undistortPoints(imagePoints, imagePointsRect,
+          K, D, cv::Mat::eye(3, 3, CV_64F), K);
+  
+  /*ROS_INFO_STREAM("Undistorting with coefficients " << camera.distortionCoeffs());
+  ROS_INFO_STREAM("Distorted points: " << imagePoints);
+  ROS_INFO_STREAM("Undistorted points: " << imagePointsRect);*/
+
   cv::Vec4f distCoeffs(0,0,0,0); // distortion coefficients
   // TODO Perhaps something like SOLVEPNP_EPNP would be faster? Would
   // need to first check WHAT is a bottleneck in this code, and only
   // do this if PnP solution is the bottleneck.
-  cv::solvePnP(objectPoints, imagePoints, cameraMatrix, distCoeffs, rvec, tvec);
+  cv::solvePnP(objectPoints, imagePointsRect,
+          K, distCoeffs, rvec, tvec);
   cv::Matx33d R;
   cv::Rodrigues(rvec, R);
   Eigen::Matrix3d wRo;

@@ -19,6 +19,14 @@
 #   ]
 standalone_tags:
   [
+      {id: 442, size: 0.1665, name: "442"},
+      {id: 58, size: 0.1665, name: "58"}
+      {id: 340, size: 0.1665, name: "340"}
+      {id: 21, size: 0.1665, name: "21"}
+      {id: 0, size: 0.1665, name: "0"}
+      {id: 275, size: 0.1665, name: "275"}
+      {id: 84, size: 0.1665, name: "84"}
+      {id: 188, size: 0.1665, name: "188"}
   ]
 # ## Tag bundle definitions
 # ### Remarks
@@ -32,15 +40,13 @@ standalone_tags:
 # tag_bundles:
 #   [
 #     {
-#       name: 'CUSTOM_BUNDLE_NAME',
+#       name: 'room2',
 #       layout:
 #         [
 #           {id: ID, size: SIZE, x: X_POS, y: Y_POS, z: Z_POS, qw: QUAT_W_VAL, qx: QUAT_X_VAL, qy: QUAT_Y_VAL, qz: QUAT_Z_VAL},
-#           ...
 #         ]
-#     },
-#     ...
+#     }
 #   ]
-tag_bundles:
-  [
-  ]
+#tag_bundles:
+#  [
+#  ]

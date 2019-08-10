@@ -67,6 +67,8 @@
 #include "apriltag_ros/AprilTagDetection.h"
 #include "apriltag_ros/AprilTagDetectionArray.h"
 
+#include "image_geometry/pinhole_camera_model.h"
+
 namespace apriltag_ros
 {
 
@@ -223,7 +225,7 @@ class TagDetector
   Eigen::Matrix4d getRelativeTransform(
       std::vector<cv::Point3d > objectPoints,
       std::vector<cv::Point2d > imagePoints,
-      double fx, double fy, double cx, double cy) const;
+      image_geometry::PinholeCameraModel& camera) const;
   
   void addImagePoints(apriltag_detection_t *detection,
                       std::vector<cv::Point2d >& imagePoints) const;
