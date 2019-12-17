@@ -381,7 +381,8 @@ AprilTagDetectionArray TagDetector::detectTags (
       tf::Stamped<tf::Transform> tag_transform;
       tf::poseStampedMsgToTF(pose, tag_transform);
       tf_pub_.sendTransform(tf::StampedTransform(tag_transform,
-                                                 tag_transform.stamp_,
+                                                 //tag_transform.stamp_,
+                                                 ros::Time::now(),
                                                  camera_tf_frame_,
                                                  detection_names[i]));
     }
